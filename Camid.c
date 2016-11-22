@@ -9,6 +9,7 @@ typedef short int           int16;  /* 16 bits */
 typedef long  int           int32;  /* 32 bits */
 typedef long  long          int64;  /* 64 bits */
 
+#define N (i-1)*160+(j-1)
 #define Img_Col 180 //图像宽度
 #define servo_freq 50
 #define servo_FTM FTM0
@@ -23,12 +24,12 @@ typedef long  long          int64;  /* 64 bits */
 float KP=8;//舵机方向比例系数
 float KD=0.08; //5.0;//舵机方向微分系数
 int Fit_Middleline[161];
-void get_centerline(char img[121][161])    //  提取黑线
+void get_centerline(int img[19200])    //  提取黑线
 {
    uint8 Left_Black,Left_Black_Old;
    uint8 Right_Black,Right_Black_Old;
    uint8 Middleline;  
-   uint8 Left_Black_Flag=0;
+   uint8 Left_Black_Flag=0; 
    uint8 Right_Black_Flag=0;
    uint8 i,j;
    
@@ -37,9 +38,11 @@ void get_centerline(char img[121][161])    //  提取黑线
    	
     for(j=80;j>=1;j--)  // 从中间向左边搜索，寻找黑点
     {
-      if(img[i][j]==48 && img[i][j-1]==49)
+      
+      
+      if(img[N]==0 && img[N-1]==1)
       {
-      	
+
         Left_Black=j;       // 找到左边黑点
         Left_Black_Old=Left_Black;  // 保存上一次的值，当下一次未找到黑点时，将上一次的黑点作为本次的黑点
         Left_Black_Flag++;  //找到左黑线则Left_Black_Flag加1 ，用于后面路径类型的判断
@@ -48,16 +51,19 @@ void get_centerline(char img[121][161])    //  提取黑线
       }
       else
       {
+      	
         Left_Black=j;  // 未找到左边黑点
         Left_Black_Flag=0;
       }
     }
     
-    
     for(j=81;j<=160;j++)          // 从中间向右边搜索，寻找黑点
     {
-      if(img[i][j]==48 && img[i][j+1]==49)
+      
+
+      if(img[N]==0 && img[N+1]==1)
       {
+
         Right_Black=j;         //找到右边黑点
         Right_Black_Old=Right_Black;    // 保存上一次的值，当下一次未找到黑点时，将上一次的黑点作为本次的黑点
         Right_Black_Flag++;
@@ -68,8 +74,10 @@ void get_centerline(char img[121][161])    //  提取黑线
         Right_Black=j;   //未找到右边黑点
         Right_Black_Flag=0;
       }
+      
     }
-    printf("%d   ,,  %d \n",Left_Black,Right_Black);  
+    printf("%d   ,,  %d \n",Left_Black,Right_Black);
+      
     //////////////////////  道路判断    -------------///////////////////////
      ////////////          进入直道    ///////////////////
     if(Left_Black_Flag==1 && Right_Black_Flag==1)    //找到双边黑线, 车在直道上
@@ -111,8 +119,8 @@ void get_centerline(char img[121][161])    //  提取黑线
          Middleline=(Left_Black + Right_Black)/2;
          Fit_Middleline[i]=Middleline;
     }  
-    img[i][Middleline]=49;
-  //  printf("%d %d\n",i,Middleline);
+    img[(i-1)*160+(Middleline-1)]=1;
+  // printf("%d %d\n",i,Middleline);
  }
 }
  
@@ -120,31 +128,46 @@ void get_centerline(char img[121][161])    //  提取黑线
 
 void main()
 {
-	char data[121][161];
-	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\right.txt","r");
+	uint8 data[19201];
+	int img[19200];
+	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\danhang.txt","r");
 	if(!fp)
 	{
 		printf("can't open file\n");
 		
 	}
 
-	while(!feof(fp))
-	{
-		
-		int i;
-		for(i=1;i<=120;i++)
-		{
-			fgets(*(data+i),162,fp);
-		}
-	
-	}
-	
-	get_centerline(data);
-	puts(*(data+1));
+	fgets(data,19202,fp);
+    
+//	puts(data);	
 
-    	
-
-	
+//	printf("%d\n",strlen(data));
 	fclose(fp);
+	
+	int i;
+	 //转换成采集解压后的数据 
+	for(i=0;i<19200;i++)  
+	{
+		img[i]=data[i]-'0';
+		
+	}
+		
+	get_centerline(img);
+	for(i=0;i<19200;i++)
+	{
+		if(i%160==0)
+			printf("\n");
+		printf("%d",img[i]);
+		
+	}
+		
+	
+	
+	
+	
+	
+	
+	
+	
 	
 } 
