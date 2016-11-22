@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <string.h>
 typedef unsigned char       uint8;  /*  8 bits */
 typedef unsigned short int  uint16; /* 16 bits */
 typedef unsigned long int   uint32; /* 32 bits */
@@ -9,22 +7,16 @@ typedef short int           int16;  /* 16 bits */
 typedef long  int           int32;  /* 32 bits */
 typedef long  long          int64;  /* 64 bits */
 
-#define N (i-1)*160+(j-1)
+#include <stdio.h>
+#include <string.h>
+
+#define N (i-1)*160+(j-1) //二维坐标转换为一维数组对应数据 
 #define Img_Col 180 //图像宽度
-#define servo_freq 50
-#define servo_FTM FTM0
-#define servo_CH FTM_CH0
-#define servo_pwm_middle  180    // 舵机中值
-#define servo_pwm_max  225      // 舵机偏转最大值
-#define servo_pwm_min  135  
- 
 #define White_Line_Min 10   //最小赛道宽度
 #define White_Line_Max 160   //最大赛道宽度
  
-float KP=8;//舵机方向比例系数
-float KD=0.08; //5.0;//舵机方向微分系数
 int Fit_Middleline[161];
-void get_centerline(int img[19200])    //  提取黑线
+void get_centerline(uint8 img[19200])    //  提取黑线
 {
    uint8 Left_Black,Left_Black_Old;
    uint8 Right_Black,Right_Black_Old;
@@ -33,10 +25,10 @@ void get_centerline(int img[19200])    //  提取黑线
    uint8 Right_Black_Flag=0;
    uint8 i,j;
    
-   for(i=120;i>=1;i--)  //整幅图像的每一行都进行扫描（效率低）
+   for(i=120;i>1;i--)  //整幅图像的每一行都进行扫描（效率低）
    {
    	
-    for(j=80;j>=1;j--)  // 从中间向左边搜索，寻找黑点
+    for(j=80;j>1;j--)  // 从中间向左边搜索，寻找黑点
     {
       
       
@@ -57,7 +49,7 @@ void get_centerline(int img[19200])    //  提取黑线
       }
     }
     
-    for(j=81;j<=160;j++)          // 从中间向右边搜索，寻找黑点
+    for(j=81;j<160;j++)          // 从中间向右边搜索，寻找黑点
     {
       
 
@@ -76,7 +68,7 @@ void get_centerline(int img[19200])    //  提取黑线
       }
       
     }
-    printf("%d   ,,  %d \n",Left_Black,Right_Black);
+
       
     //////////////////////  道路判断    -------------///////////////////////
      ////////////          进入直道    ///////////////////
@@ -120,7 +112,7 @@ void get_centerline(int img[19200])    //  提取黑线
          Fit_Middleline[i]=Middleline;
     }  
     img[(i-1)*160+(Middleline-1)]=1;
-  // printf("%d %d\n",i,Middleline);
+
  }
 }
  
@@ -129,7 +121,7 @@ void get_centerline(int img[19200])    //  提取黑线
 void main()
 {
 	uint8 data[19201];
-	int img[19200];
+	uint8 img[19200];
 	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\danhang.txt","r");
 	if(!fp)
 	{
@@ -139,9 +131,6 @@ void main()
 
 	fgets(data,19202,fp);
     
-//	puts(data);	
-
-//	printf("%d\n",strlen(data));
 	fclose(fp);
 	
 	int i;
