@@ -10,6 +10,7 @@ typedef long  long          int64;  /* 64 bits */
 #include <stdio.h>
 #include <string.h>
 
+
 #define N (i-1)*160+(j-1) //二维坐标转换为一维数组对应数据 
 #define Img_Col 180 //图像宽度
 #define White_Line_Min 10   //最小赛道宽度
@@ -19,11 +20,13 @@ int xz[75]={10,10,11,12,13,13,14,15,15,16,17,17,18,19,20,20,21,22,23,24,24,25,26
 int Fit_Middleline[161];
 void get_centerline(uint8 img[19200])    //  提取黑线
 {
+	uint16 dd=0;
    uint8 Left_Black,Left_Black_Old;
    uint8 Right_Black,Right_Black_Old;
    uint8 Middleline=80;  
    uint8 Left_Black_Flag=0; 
    uint8 Right_Black_Flag=0;
+   uint8 first_lost=1;
    uint8 i,j;
    uint8 C=0; //偏移系数
    
@@ -109,17 +112,28 @@ void get_centerline(uint8 img[19200])    //  提取黑线
     ////////////    进入十字路口或者丢失两边黑线   /////////////////////////
     else if(Left_Black_Flag==0 && Right_Black_Flag==0)   //两边都没找到黑线，则舍弃该行，沿用上一行的值
     {
-     
-         Left_Black=Left_Black_Old;
-         Right_Black=Right_Black_Old;
-         Middleline=(Left_Black + Right_Black)/2;
-         Fit_Middleline[i]=Middleline;
+     	if(first_lost==1)
+     	{
+     		Middleline=dd/(120-i)+1;
+     		Fit_Middleline[i]=Middleline;
+     		first_lost==0;
+     		
+		}
+     	else
+     	{
+     //		Left_Black=Left_Black_Old;
+      //   	Right_Black=Right_Black_Old;
+         	Middleline=Fit_Middleline[i+1];
+         	Fit_Middleline[i]=Middleline;
+		}
+         
     }  
     img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //画黑线 
     
  //   C=(Right_Black-Left_Black)/2-5;
-
+	dd=dd+Middleline;
  }
+  
 }
  
 
