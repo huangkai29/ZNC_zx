@@ -15,24 +15,26 @@ typedef long  long          int64;  /* 64 bits */
 #define White_Line_Min 10   //最小赛道宽度
 #define White_Line_Max 160   //最大赛道宽度
  
+int xz[75]={10,10,11,12,13,13,14,15,15,16,17,17,18,19,20,20,21,22,23,24,24,25,26,27,27,28,29,30,30,31,32,32,33,34,35,35,36,37,37,38,39,40,40,41,42,42,43,43,44,45,45,46,47,48,48,49,50,50,51,52,52,53,54,54,55,55,56,56,57,57,58,58,59,60,60};
 int Fit_Middleline[161];
 void get_centerline(uint8 img[19200])    //  提取黑线
 {
    uint8 Left_Black,Left_Black_Old;
    uint8 Right_Black,Right_Black_Old;
-   uint8 Middleline;  
+   uint8 Middleline=80;  
    uint8 Left_Black_Flag=0; 
    uint8 Right_Black_Flag=0;
    uint8 i,j;
+   uint8 C=0; //偏移系数
    
    for(i=120;i>1;i--)  //整幅图像的每一行都进行扫描（效率低）
    {
    	
-    for(j=80;j>1;j--)  // 从中间向左边搜索，寻找黑点
+    for(j=Middleline-C;j>1;j--)  // 从中间向左边搜索，寻找黑点
     {
       
       
-      if(img[N]==0 && img[N-1]==1)
+      if(img[N]==1 && img[N-1]==0)
       {
 
         Left_Black=j;       // 找到左边黑点
@@ -49,11 +51,11 @@ void get_centerline(uint8 img[19200])    //  提取黑线
       }
     }
     
-    for(j=81;j<160;j++)          // 从中间向右边搜索，寻找黑点
+    for(j=(Middleline+1+C);j<160;j++)          // 从中间向右边搜索，寻找黑点
     {
       
 
-      if(img[N]==0 && img[N+1]==1)
+      if(img[N]==1 && img[N+1]==0)
       {
 
         Right_Black=j;         //找到右边黑点
@@ -66,7 +68,9 @@ void get_centerline(uint8 img[19200])    //  提取黑线
         Right_Black=j;   //未找到右边黑点
         Right_Black_Flag=0;
       }
-      
+
+      	
+          
     }
 
       
@@ -87,7 +91,7 @@ void get_centerline(uint8 img[19200])    //  提取黑线
     {
       if((Right_Black >=White_Line_Min) && (Right_Black <=White_Line_Max))
        {
-         Middleline=Right_Black/2;
+         Middleline=Right_Black-xz[i-46];
          Fit_Middleline[i]=Middleline;
        }
     }
@@ -97,7 +101,7 @@ void get_centerline(uint8 img[19200])    //  提取黑线
     {
       if((Img_Col -Left_Black >=White_Line_Min) && (Img_Col -Left_Black <=White_Line_Max))
        {
-         Middleline=(Left_Black+Img_Col)/2;
+         Middleline=Left_Black+xz[i-46];
          Fit_Middleline[i]=Middleline;
        }
     }
@@ -111,7 +115,9 @@ void get_centerline(uint8 img[19200])    //  提取黑线
          Middleline=(Left_Black + Right_Black)/2;
          Fit_Middleline[i]=Middleline;
     }  
-    img[(i-1)*160+(Middleline-1)]=1;
+    img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //画黑线 
+    
+ //   C=(Right_Black-Left_Black)/2-5;
 
  }
 }
@@ -122,7 +128,7 @@ void main()
 {
 	uint8 data[19201];
 	uint8 img[19200];
-	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\danhang.txt","r");
+	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\Desktop\\dd1.txt","r");
 	if(!fp)
 	{
 		printf("can't open file\n");
@@ -152,9 +158,8 @@ void main()
 		
 	
 	
-	
-	
-	
+
+
 	
 	
 	
