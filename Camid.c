@@ -18,15 +18,15 @@ typedef long  long          int64;  /* 64 bits */
  
 int xz[75]={10,10,11,12,13,13,14,15,15,16,17,17,18,19,20,20,21,22,23,24,24,25,26,27,27,28,29,30,30,31,32,32,33,34,35,35,36,37,37,38,39,40,40,41,42,42,43,43,44,45,45,46,47,48,48,49,50,50,51,52,52,53,54,54,55,55,56,56,57,57,58,58,59,60,60};
 int Fit_Middleline[161];
-void get_centerline(uint8 img[19200])    //  提取黑线
+int get_centerline(uint8 img[19200])    //  提取黑线
 {
-	uint16 dd=0;
-   uint8 Left_Black,Left_Black_Old;
-   uint8 Right_Black,Right_Black_Old;
+
+   uint8 Left_Black;
+   uint8 Right_Black;
    uint8 Middleline=80;  
    uint8 Left_Black_Flag=0; 
    uint8 Right_Black_Flag=0;
-   uint8 first_lost=1;
+   uint8 First_lost=1;
    uint8 i,j;
    uint8 C=0; //偏移系数
    
@@ -41,7 +41,7 @@ void get_centerline(uint8 img[19200])    //  提取黑线
       {
 
         Left_Black=j;       // 找到左边黑点
-        Left_Black_Old=Left_Black;  // 保存上一次的值，当下一次未找到黑点时，将上一次的黑点作为本次的黑点
+
         Left_Black_Flag++;  //找到左黑线则Left_Black_Flag加1 ，用于后面路径类型的判断
 
         break;
@@ -62,7 +62,7 @@ void get_centerline(uint8 img[19200])    //  提取黑线
       {
 
         Right_Black=j;         //找到右边黑点
-        Right_Black_Old=Right_Black;    // 保存上一次的值，当下一次未找到黑点时，将上一次的黑点作为本次的黑点
+
         Right_Black_Flag++;
         break; 
       }
@@ -71,10 +71,13 @@ void get_centerline(uint8 img[19200])    //  提取黑线
         Right_Black=j;   //未找到右边黑点
         Right_Black_Flag=0;
       }
-
-      	
-          
+      	          
     }
+    //第120行为空则不控制，舍弃该场 
+    if(Right_Black_Flag==0 && Left_Black_Flag==0 && i==120)
+    {
+    	return 0;
+	}
 
       
     //////////////////////  道路判断    -------------///////////////////////
@@ -112,11 +115,13 @@ void get_centerline(uint8 img[19200])    //  提取黑线
     ////////////    进入十字路口或者丢失两边黑线   /////////////////////////
     else if(Left_Black_Flag==0 && Right_Black_Flag==0)   //两边都没找到黑线，则舍弃该行，沿用上一行的值
     {
-     	if(first_lost==1)
+    	
+     	if(First_lost==1)
      	{
-     		Middleline=dd/(120-i)+1;
+     		
+     		Middleline=Fit_Middleline[i+6];
      		Fit_Middleline[i]=Middleline;
-     		first_lost==0;
+     		First_lost=0;
      		
 		}
      	else
@@ -131,7 +136,7 @@ void get_centerline(uint8 img[19200])    //  提取黑线
     img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //画黑线 
     
  //   C=(Right_Black-Left_Black)/2-5;
-	dd=dd+Middleline;
+
  }
   
 }
@@ -142,7 +147,7 @@ void main()
 {
 	uint8 data[19201];
 	uint8 img[19200];
-	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\Desktop\\dd1.txt","r");
+	FILE *fp=fopen("C:\\Users\\HK\\Desktop\\Desktop\\dd2.txt","r");
 	if(!fp)
 	{
 		printf("can't open file\n");
