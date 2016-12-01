@@ -10,9 +10,10 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define F "wd14.txt"
+#define F "wd12.txt"
 
-
+#define img_top 41
+#define img_base 100
 #define Img_Col 160 //图像宽度
 #define servo_freq 50
 #define servo_FTM FTM0
@@ -45,7 +46,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
    uint8 i,j;
    uint8 C=0; //偏移系数
    
-   for(i=120;i>=1;i--)  //整幅图像的每一行都进行扫描（效率低）
+   for(i=img_base;i>=img_top;i--)  //整幅图像的每一行都进行扫描（效率低）
    {
    	
     for(j=Middleline-C;j>1;j--)  // 从中间向左边搜索，寻找黑点
@@ -89,7 +90,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
       	          
     }
     //最近三行不全为黑色舍弃该场 
-    if((Right_Black_Flag==0 && Left_Black_Flag==0) && (i==120 || i==119 || i==118 || i==117 || i==116 || i==115))
+    if((Right_Black_Flag==0 && Left_Black_Flag==0) && (i==img_base || i==img_base-1 || i==img_base-2))
     {
     	return 0;
 	}
@@ -219,7 +220,7 @@ void main()
 	}
 		
 	get_centerline(img);
-	for(i=6400;i<16000;i++)
+	for(i=0;i<19200;i++)
 	{
 		if(i%160==0)
 			printf("\n%3d:",(i/160)+1);
