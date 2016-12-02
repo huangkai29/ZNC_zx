@@ -10,7 +10,7 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "dd3.txt"
+#define File "wd1.txt"
 
 #define img_high img_base-img_top+1
 #define img_top 41
@@ -98,44 +98,44 @@ int get_centerline(uint8 img[19200])    //  提取黑线
  //   C=(Right_Black-Left_Black)/2-5;
 	
  }
-uint8 n;
-uint8 F[4][2]; //F[1][1]左下  F[2][1]右下  F[3][1]左上 F[4][1]右上 
-for(n=img_high-1;n>=1;n--) 
-{
- 	if(tenflag>=3) //十字路口 
- 	{
- 		if(!(Left_Black[n]-Left_Black[n+1]>=0 && Left_Black[n]-Left_Black[n+1]<=2))
- 		{
- 			if(F[1][1]==0) //左下 
- 			{
- 				F[1][0]=n+1;
- 				F[1][1]=Left_Black[n+1];
- 				
+	uint8 n;
+	uint8 zzFlag=0;
+	for(n=img_high-1;n>=1;n--) 
+	{
+		
+	 	if(tenflag>=3) //十字路口 
+	 	{
+	 		
+	 		if(!(Left_Black[n]-Left_Black[n+1]>=0 && Left_Black[n]-Left_Black[n+1]<=2))
+	 			zzFlag=1;
+	 				 								
+	 		if (!(Right_Black[n]-Right_Black[n+1]<=0 && Right_Black[n]-Right_Black[n+1]>=-2))
+	 			zzFlag=1;		
+	 		if(zzFlag==0)
+			{
+				Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
 			}
- 				
- 						
+			else if(zzFlag==1)
+			{
+				Fit_Middleline[n]=Fit_Middleline[n+1];
+			}
+			
+			
+			printf("%d:%d\n",n,Fit_Middleline[n]);
+			img[(n+40-1)*160+(Fit_Middleline[n]-1)]=0;
+					
 		}
- 		if (!(Right_Black[n]-Right_Black[n+1]<=0 && Right_Black[n]-Right_Black[n+1]>=-2))
- 		{
- 			if(F[2][1]==0) //右下 
- 			{
- 				F[2][0]=n+1;
- 				F[2][1]=Right_Black[n+1];
-			}
- 				
- 			
-		}	
+	//	else //弯道
 		
 				
-	}		
-}
-
- printf("%d:%d\n%d:%d\n",F[1][0],F[1][1],F[2][0],F[2][1]);
-
- 	
- 
- 
-  return 8;
+	}
+	
+	
+	
+	 	
+	 
+	 
+	  return 8;
 }
  
 
