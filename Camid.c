@@ -10,7 +10,7 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "wd1.txt"
+#define File "wd2.txt"
 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
@@ -160,14 +160,13 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	
 	for(n=img_high-1;n>=1;n--) 
 	{
-		
-	 	if(tenflag>=3) //十字路口 
+		/////////////十字路口 /////////////////
+	 	if(tenflag>=3) 
 	 	{
 	 		
 	 		
 	 		if(!(Left_Black[n]-Left_Black[n+1]>=0 && Left_Black[n]-Left_Black[n+1]<=2))
-	 			zzFlag=1;
-	 				 								
+	 			zzFlag=1;								
 	 		if (!(Right_Black[n]-Right_Black[n+1]<=0 && Right_Black[n]-Right_Black[n+1]>=-2))
 	 			zzFlag=1;		
 	 		if(zzFlag==0)
@@ -185,8 +184,8 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 			
 					
 		}
-		
-		else //弯道（已经补线）和直道 
+		/////////////弯道（已经补线）和直道 ///////////////////
+		else 
 		{
 			//赛道连续差值6以内，一旦不连续则终止中线拟合 
 			if((Left_Black[n]-Left_Black[n+1]>=-6 && Left_Black[n]-Left_Black[n+1]<=6) && Right_Black[n]-Right_Black[n+1]<=6 && Right_Black[n]-Right_Black[n+1]>=-6 && discon==0)
@@ -206,10 +205,9 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;			
 	}
 	
-	for(n=img_high;n>=1;n--) 
-	{
-		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
-	}
+//	for(n=img_high;n>=1;n--) 
+//		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
+	
 	
 	  return 8;
 }
@@ -217,8 +215,6 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 
 
 //舵机控制
-
-int Servo_Control_PWM;
 int Error,LastError=0;
 int servo_control(void)
 {
@@ -227,18 +223,27 @@ int servo_control(void)
    int i;
    int SteerSum=0; 
    int Servo_PWM;
+   int Nozero=0;
    
-   for(i=120;i>100;i--)  //仅对近处的50行取平均值
-    SteerSum+=Fit_Middleline[i]-Img_Col/2;
-   for(i=100;i>75;i--) //远25加大权重
-    SteerSum+=(Fit_Middleline[i]-Img_Col/2)*2.5;
-   Error=-(int)(SteerSum/45);
+   for(i=img_high;i>=1;i--)  //取平均值
+   {
+   	if(Fit_Middleline[i]!=0)
+   	{
+   		
+   		SteerSum=SteerSum+(Fit_Middleline[i]-Img_Col/2);
+   		Nozero++;
+   		
+   		
+	}
+   } 
+   
+   Error=-(int)(SteerSum/Nozero);
 
   Servo_PWM=KP*Error+KD*(Error-LastError);
   Servo_PWM=Servo_PWM + servo_pwm_middle;
   LastError=Error;
   
-  if(Servo_PWM > servo_pwm_max)  //限定舵机打角范围，防止超过两个轮子所能转过的范//围，servo_pwm_max是轮子最大的转角，可调节占空比使舵机打角后轮子所能转的角度对//应的最大占空比，这样便可得出轮子所能转过的最大占空比和最小占空比。
+  if(Servo_PWM > servo_pwm_max)  //限定舵机打角范围，防止超过两个轮子所能转过的范围
     Servo_PWM = servo_pwm_max;
   
   if(Servo_PWM < servo_pwm_min)
@@ -247,9 +252,10 @@ int servo_control(void)
   if((Error<2) && (Error>-2))    //偏差太小就不改变舵机角度
      Servo_PWM=servo_pwm_middle;    //使用原来舵机的值 
    
-  Servo_Control_PWM=Servo_PWM;
+  
+   
   return Servo_PWM;
- 
+
 }
 void main()
 {
@@ -284,7 +290,7 @@ void main()
 		
 	}
 	
-		
+	printf("\n%d",servo_control());
 	
 	
 
