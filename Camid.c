@@ -10,7 +10,7 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "dd1.txt"
+#define File "dd.txt"
 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
@@ -144,11 +144,11 @@ int get_centerline(uint8 img[19200])    //  提取黑线
     	tenflag++;
 
 	//非十字路口补线 （弯道补线） 
-	else
+	else if(tenflag<=3) 
 	{
 		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
 			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
-		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	
+		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	 
 			Right_Black[Xi]=Left_Black[Xi]+xz[Xi-1];
 	}
     		
@@ -185,8 +185,12 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 				
 			
 			if(LeftZJ && RightZJ) //出十字路口 
-				if(Left_Black[n]>LeftZJ && Right_Black[n]<RightZJ)
-						Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
+				if((Left_Black[n]>LeftZJ) && (Right_Black[n]<RightZJ) )
+				{
+					Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
+					printf("sdsadsa\n\n\n");
+				}
+						
 				
 					
 			
@@ -207,9 +211,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 			else if(Midd-Fit_Middleline[n+3]<=4 && Midd-Fit_Middleline[n+3]>=-4)			
 				Fit_Middleline[n]=Midd;							
 			else			
-				Fit_Middleline[n]=0;
-
-				
+				Fit_Middleline[n]=0;				
 			
 //			//赛道连续差值6以内，一旦不连续则终止中线拟合 
 //			if((Left_Black[n]-Left_Black[n+1]>=-6 && Left_Black[n]-Left_Black[n+1]<=6) && Right_Black[n]-Right_Black[n+1]<=6 && Right_Black[n]-Right_Black[n+1]>=-6 && discon==0)
@@ -230,8 +232,8 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 				
 	}
 	
-//	for(n=img_high;n>=1;n--) 
-//		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
+	for(n=img_high;n>=1;n--) 
+		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
 	
 	
 	  return 8;
