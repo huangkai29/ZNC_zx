@@ -1,4 +1,4 @@
-typedef unsigned char       uint8;  /*  8 bits */
+ï»¿typedef unsigned char       uint8;  /*  8 bits */
 typedef unsigned short int  uint16; /* 16 bits */
 typedef unsigned long int   uint32; /* 32 bits */
 typedef unsigned long long  uint64; /* 64 bits */
@@ -12,28 +12,28 @@ typedef long  long          int64;  /* 64 bits */
 #include <string.h>
 #define File "dd.txt"
 
-#define img_top 41 //Í¼ÏñÉÏ²¿ 
-#define img_base 100 //Í¼ÏñÏÂ²¿ 
-#define img_high img_base-img_top+1 //Í¼Ïñ¸ß¶È 
-#define Img_Col 160 //Í¼Ïñ¿í¶È
+#define img_top 41 //å›¾åƒä¸Šéƒ¨ 
+#define img_base 100 //å›¾åƒä¸‹éƒ¨ 
+#define img_high img_base-img_top+1 //å›¾åƒé«˜åº¦ 
+#define Img_Col 160 //å›¾åƒå®½åº¦
 
-#define servo_pwm_middle  3400    // ¶æ»úÖĞÖµ
-#define servo_pwm_max  4200      // ¶æ»úÆ«×ª×î´óÖµ
-#define servo_pwm_min  2600     //¶æ»úÆ«×ª×îĞ¡Öµ
-#define White_Line_Min 20   //×îĞ¡ÈüµÀ¿í¶È
-#define White_Line_Max 160   //×î´óÈüµÀ¿í¶È
-#define N (i-1)*160+(j-1) //¶şÎ¬×ø±ê×ª»»ÎªÒ»Î¬Êı×é¶ÔÓ¦Êı¾İ  
-#define Xi i-img_top+1 //Êµ¼ÊĞĞÊı×ª»»µ½´Ó0¿ªÊ¼µÄĞĞÊı 
+#define servo_pwm_middle  3400    // èˆµæœºä¸­å€¼
+#define servo_pwm_max  4200      // èˆµæœºåè½¬æœ€å¤§å€¼
+#define servo_pwm_min  2600     //èˆµæœºåè½¬æœ€å°å€¼
+#define White_Line_Min 20   //æœ€å°èµ›é“å®½åº¦
+#define White_Line_Max 160   //æœ€å¤§èµ›é“å®½åº¦
+#define N (i-1)*160+(j-1) //äºŒç»´åæ ‡è½¬æ¢ä¸ºä¸€ç»´æ•°ç»„å¯¹åº”æ•°æ®  
+#define Xi i-img_top+1 //å®é™…è¡Œæ•°è½¬æ¢åˆ°ä»0å¼€å§‹çš„è¡Œæ•° 
  
-float KP=23;//¶æ»ú·½Ïò±ÈÀıÏµÊı
-float KD=0.08; //5.0;//¶æ»ú·½ÏòÎ¢·ÖÏµÊı
+float KP=23;//èˆµæœºæ–¹å‘æ¯”ä¾‹ç³»æ•°
+float KD=0.08; //5.0;//èˆµæœºæ–¹å‘å¾®åˆ†ç³»æ•°
 uint16 Fit_Middleline[img_high+1];
 
-//ĞŞÕıÊı×é
+//ä¿®æ­£æ•°ç»„
 int xz[60]={25,27,29,30,31,33,34,35,36,38,38,40,42,43,44,46,47,49,49,51,52,53,55,56,57,59,60,61,63,64,65,66,68,69,70,72,73,74,76,77,79,79,81,81,84,84,86,87,88,89,89,91,93,93,95,96,97,98,99,101};
 
 uint8 tenflag=0;
-int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
+int get_centerline(uint8 img[19200])    //  æå–é»‘çº¿
 {
 
    uint8 Left_Black[img_high+1];
@@ -41,35 +41,35 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
    uint8 Middleline=80;  
    int16 i,j;
 
-   ////////////////////////////////////////ËÑË÷Ç°ÈıĞĞ,ÅĞ¶ÏÊÇ·ñÊÇÓĞĞ§Í¼Ïñ/////////////////////////////
+   ////////////////////////////////////////æœç´¢å‰ä¸‰è¡Œ,åˆ¤æ–­æ˜¯å¦æ˜¯æœ‰æ•ˆå›¾åƒ/////////////////////////////
     
-   for(i=img_base;i>=img_base-2;i--)  //´ÓÖĞÏß¿ªÊ¼ËÑË÷Ç°ÈıĞĞ 
+   for(i=img_base;i>=img_base-2;i--)  //ä»ä¸­çº¿å¼€å§‹æœç´¢å‰ä¸‰è¡Œ 
    {   	
-    for(j=Img_Col/2;j>1;j--)  // ´ÓÖĞ¼äÏò×ó±ßËÑË÷£¬Ñ°ÕÒºÚµã
+    for(j=Img_Col/2;j>1;j--)  // ä»ä¸­é—´å‘å·¦è¾¹æœç´¢ï¼Œå¯»æ‰¾é»‘ç‚¹
     {      
       if(img[N]==254 && img[N-1]==0 )
       {     	
-        Left_Black[Xi]=j;       // ÕÒµ½×ó±ßºÚµã
+        Left_Black[Xi]=j;       // æ‰¾åˆ°å·¦è¾¹é»‘ç‚¹
         break;
       }
       else
       	Left_Black[Xi]=1;	  
     }
     
-    for(j=(Img_Col/2);j<160;j++)          // ´ÓÖĞ¼äÏòÓÒ±ßËÑË÷£¬Ñ°ÕÒºÚµã
+    for(j=(Img_Col/2);j<160;j++)          // ä»ä¸­é—´å‘å³è¾¹æœç´¢ï¼Œå¯»æ‰¾é»‘ç‚¹
     {      
       if(img[N]==254 && img[N+1]==0)
       {
-        Right_Black[Xi]=j;         //ÕÒµ½ÓÒ±ßºÚµã
+        Right_Black[Xi]=j;         //æ‰¾åˆ°å³è¾¹é»‘ç‚¹
         break; 
       }	        
 	  else
 	  	Right_Black[Xi]=255;	    
     }
-    //×î½üÈıĞĞÓĞÈ«ºÚĞĞÔòÉáÆú 
+    //æœ€è¿‘ä¸‰è¡Œæœ‰å…¨é»‘è¡Œåˆ™èˆå¼ƒ 
     if(Left_Black[Xi]==1 && Right_Black[Xi]==255 && img[(i-1)*160+(80-1)]!=0)
     	return 0;
-    else //²»ÉáÆúÔò²¹Ïß 
+    else //ä¸èˆå¼ƒåˆ™è¡¥çº¿ 
     {
     	if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
 			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
@@ -78,18 +78,18 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 	}
    
  //   if(Fit_Middleline[i]!=0)
-//    	img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //»­ºÚÏß    
+//    	img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //ç”»é»‘çº¿    
 
  }
  
-  /////////////////////////////Í¼ÏñÓĞĞ§,¼ÌĞøËÑË÷ ////////////////////////////////////////
-   for(i=img_base-3;i>=img_top;i--)  //±ßÑØÑ°µã 
+  /////////////////////////////å›¾åƒæœ‰æ•ˆ,ç»§ç»­æœç´¢ ////////////////////////////////////////
+   for(i=img_base-3;i>=img_top;i--)  //è¾¹æ²¿å¯»ç‚¹ 
    {   
    
    	
    	uint8 oldlb=Left_Black[Xi+1];
 
-	for(j=oldlb+6;j>=oldlb-6;j--)  //´ÓÉÏ´ÎµÄµãËÑË÷ 
+	for(j=oldlb+6;j>=oldlb-6;j--)  //ä»ä¸Šæ¬¡çš„ç‚¹æœç´¢ 
 	{    	  
 	  	if(img[N]==254 && img[N-1]==0 )
 	   	{     	
@@ -97,14 +97,14 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 	        break;
     	} 	    	    		
 	}
-	if(j==oldlb-7) //±ßÑØÑ°µã²»³É£¬¸ÄÎªÆÓËØµÄÑ¡µã 
+	if(j==oldlb-7) //è¾¹æ²¿å¯»ç‚¹ä¸æˆï¼Œæ”¹ä¸ºæœ´ç´ çš„é€‰ç‚¹ 
 	{
 		
-		for(j=Img_Col/2;j>1;j--)  // ´ÓÖĞ¼äÏò×ó±ßËÑË÷£¬Ñ°ÕÒºÚµã
+		for(j=Img_Col/2;j>1;j--)  // ä»ä¸­é—´å‘å·¦è¾¹æœç´¢ï¼Œå¯»æ‰¾é»‘ç‚¹
 	    {      
 	      if(img[N]==254 && img[N-1]==0 )
 	      {     	
-	        Left_Black[Xi]=j;       // ÕÒµ½×ó±ßºÚµã
+	        Left_Black[Xi]=j;       // æ‰¾åˆ°å·¦è¾¹é»‘ç‚¹
 	        break;
 	      }
 	      else
@@ -113,7 +113,7 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 	}
 	          
 	uint8 oldrb=Right_Black[Xi+1];
-	for(j=oldrb-6;j<=oldrb+6;j++)          // ´ÓÉÏ´ÎµÄµãËÑË÷ 
+	for(j=oldrb-6;j<=oldrb+6;j++)          // ä»ä¸Šæ¬¡çš„ç‚¹æœç´¢ 
     {      
 	 		      			 
 	 	 if(img[N]==254 && img[N+1]==0)
@@ -122,14 +122,14 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 	        break; 
 	      }	        
     }
-    if(j==oldrb+7) //±ßÑØÑ°µã²»³É£¬¸ÄÎªÆÓËØµÄÑ¡µã 
+    if(j==oldrb+7) //è¾¹æ²¿å¯»ç‚¹ä¸æˆï¼Œæ”¹ä¸ºæœ´ç´ çš„é€‰ç‚¹ 
     {
     	
-    	for(j=(Img_Col/2);j<160;j++)          // ´ÓÖĞ¼äÏòÓÒ±ßËÑË÷£¬Ñ°ÕÒºÚµã
+    	for(j=(Img_Col/2);j<160;j++)          // ä»ä¸­é—´å‘å³è¾¹æœç´¢ï¼Œå¯»æ‰¾é»‘ç‚¹
 	    {      
 	      if(img[N]==254 && img[N+1]==0)
 	      {
-	        Right_Black[Xi]=j;         //ÕÒµ½ÓÒ±ßºÚµã
+	        Right_Black[Xi]=j;         //æ‰¾åˆ°å³è¾¹é»‘ç‚¹
 	        break; 
 	      }	        
 		  else
@@ -139,11 +139,11 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 	
 
     
-    //Ê®×ÖÂ·¿Ú±ê¼Ç 
+    //åå­—è·¯å£æ ‡è®° 
     if(Left_Black[Xi]==1 && Right_Black[Xi]==255 && img[(i-1)*160+(80-1)]!=0)
     	tenflag++;
 
-	//·ÇÊ®×ÖÂ·¿Ú²¹Ïß £¨ÍäµÀ²¹Ïß£© 
+	//éåå­—è·¯å£è¡¥çº¿ ï¼ˆå¼¯é“è¡¥çº¿ï¼‰ 
 	else if(tenflag<=3) 
 	{
 		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
@@ -153,22 +153,22 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 	}
     		
  }
- //////////////////////////////////////////ÈüµÀ×óÓÒ±ßÏßÊı×é´¦ÀíÒÔ¼°»­ÖĞÏß ///////////////////////////////////////
+ //////////////////////////////////////////èµ›é“å·¦å³è¾¹çº¿æ•°ç»„å¤„ç†ä»¥åŠç”»ä¸­çº¿ ///////////////////////////////////////
 	uint8 n;
 	uint8 discon=0;
-	uint8 LeftZJ,RightZJ; //³öÊ®×ÖµÄ±êÖ¾ 
+	uint8 LeftZJ,RightZJ; //å‡ºåå­—çš„æ ‡å¿— 
 	
-	Fit_Middleline[img_high]=(Right_Black[img_high]+Left_Black[img_high])/2; //×îºóÒ»ĞĞÖĞÏß 
+	Fit_Middleline[img_high]=(Right_Black[img_high]+Left_Black[img_high])/2; //æœ€åä¸€è¡Œä¸­çº¿ 
 	
 	
 	for(n=img_high-1;n>=1;n--) 
 	{
-		/////////////Ê®×ÖÂ·¿Ú /////////////////
+		/////////////åå­—è·¯å£ /////////////////
 	 	if(tenflag>=3) 
 	 	{
 	 		
 	 		
-	 		if(!(Left_Black[n]-Left_Black[n+1]>=0 && Left_Black[n]-Left_Black[n+1]<=2) && !LeftZJ) //¼ì²âµ½Ö±½Ç£¬±ê¼ÇÎª³öÊ®×Ö 
+	 		if(!(Left_Black[n]-Left_Black[n+1]>=0 && Left_Black[n]-Left_Black[n+1]<=2) && !LeftZJ) //æ£€æµ‹åˆ°ç›´è§’ï¼Œæ ‡è®°ä¸ºå‡ºåå­— 
 	 			LeftZJ=Left_Black[n+1]; 
 								
 	 		if (!(Right_Black[n]-Right_Black[n+1]<=0 && Right_Black[n]-Right_Black[n+1]>=-2) && !RightZJ)
@@ -177,14 +177,14 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 
 			
 	 					
-	 		if(!LeftZJ && !RightZJ) //·ÇÊ®×ÖÇø 
+	 		if(!LeftZJ && !RightZJ) //éåå­—åŒº 
 				Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
 			
-			else if(LeftZJ || RightZJ)	//½øÈëÊ®×ÖÇø£¬ÓÃ¸Õ³öÊ®×ÖµÄÖĞÏßÄâºÏ 
+			else if(LeftZJ || RightZJ)	//è¿›å…¥åå­—åŒºï¼Œç”¨åˆšå‡ºåå­—çš„ä¸­çº¿æ‹Ÿåˆ 
 				Fit_Middleline[n]=Fit_Middleline[n+1];
 				
 			
-			if(LeftZJ && RightZJ) //³öÊ®×ÖÂ·¿Ú 
+			if(LeftZJ && RightZJ) //å‡ºåå­—è·¯å£ 
 				if((Left_Black[n]>LeftZJ) && (Right_Black[n]<RightZJ) )
 				{
 					Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
@@ -199,21 +199,21 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 			
 					
 		}
-		/////////////ÍäµÀ£¨ÒÑ¾­²¹Ïß£©ºÍÖ±µÀ ///////////////////
+		/////////////å¼¯é“ï¼ˆå·²ç»è¡¥çº¿ï¼‰å’Œç›´é“ ///////////////////
 		else 
 		{
 			
-			int Midd=(Right_Black[n]+Left_Black[n])/2; //µ±Ç°ĞĞµÄÄâºÏÖĞÏß 
+			int Midd=(Right_Black[n]+Left_Black[n])/2; //å½“å‰è¡Œçš„æ‹Ÿåˆä¸­çº¿ 
 			if(Midd-Fit_Middleline[n+1]<=3 && Midd-Fit_Middleline[n+1]>=-3)
 				Fit_Middleline[n]=Midd;	
-			else if(Midd-Fit_Middleline[n+2]<=3 && Midd-Fit_Middleline[n+2]>=-3)		//Óëµ×ÏÂÒ»ĞĞ²»Á¬Ğø£¬ÔòËÑË÷µ×ÏÂµÄµ×ÏÂÒ»ĞĞ	
+			else if(Midd-Fit_Middleline[n+2]<=3 && Midd-Fit_Middleline[n+2]>=-3)		//ä¸åº•ä¸‹ä¸€è¡Œä¸è¿ç»­ï¼Œåˆ™æœç´¢åº•ä¸‹çš„åº•ä¸‹ä¸€è¡Œ	
 				Fit_Middleline[n]=Midd;							
 			else if(Midd-Fit_Middleline[n+3]<=4 && Midd-Fit_Middleline[n+3]>=-4)			
 				Fit_Middleline[n]=Midd;							
 			else			
 				Fit_Middleline[n]=0;				
 			
-//			//ÈüµÀÁ¬Ğø²îÖµ6ÒÔÄÚ£¬Ò»µ©²»Á¬ĞøÔòÖÕÖ¹ÖĞÏßÄâºÏ 
+//			//èµ›é“è¿ç»­å·®å€¼6ä»¥å†…ï¼Œä¸€æ—¦ä¸è¿ç»­åˆ™ç»ˆæ­¢ä¸­çº¿æ‹Ÿåˆ 
 //			if((Left_Black[n]-Left_Black[n+1]>=-6 && Left_Black[n]-Left_Black[n+1]<=6) && Right_Black[n]-Right_Black[n+1]<=6 && Right_Black[n]-Right_Black[n+1]>=-6 && discon==0)
 //	 		{
 //	 			Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
@@ -227,7 +227,7 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
 //				
 		}
 		
-	if(Fit_Middleline[n]!=0)  //»­ÖĞÏß 
+	if(Fit_Middleline[n]!=0)  //ç”»ä¸­çº¿ 
 		img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
 				
 	}
@@ -241,7 +241,7 @@ int get_centerline(uint8 img[19200])    //  ÌáÈ¡ºÚÏß
  
 
 
-//¶æ»ú¿ØÖÆ
+//èˆµæœºæ§åˆ¶
 int Error,LastError=0;
 int servo_control(void)
 {
@@ -252,7 +252,7 @@ int servo_control(void)
    int Servo_PWM;
    int Nozero=0;
    
-   for(i=img_high;i>=1;i--)  //È¡ÓĞĞ§ĞĞµÄÆ½¾ùÖµ
+   for(i=img_high;i>=1;i--)  //å–æœ‰æ•ˆè¡Œçš„å¹³å‡å€¼
    {
    	if(Fit_Middleline[i]!=0)
    	{
@@ -270,14 +270,14 @@ int servo_control(void)
   Servo_PWM=Servo_PWM + servo_pwm_middle;
   LastError=Error;
   
-  if(Servo_PWM > servo_pwm_max)  //ÏŞ¶¨¶æ»ú´ò½Ç·¶Î§£¬·ÀÖ¹³¬¹ıÁ½¸öÂÖ×ÓËùÄÜ×ª¹ıµÄ·¶Î§
+  if(Servo_PWM > servo_pwm_max)  //é™å®šèˆµæœºæ‰“è§’èŒƒå›´ï¼Œé˜²æ­¢è¶…è¿‡ä¸¤ä¸ªè½®å­æ‰€èƒ½è½¬è¿‡çš„èŒƒå›´
     Servo_PWM = servo_pwm_max;
   
   if(Servo_PWM < servo_pwm_min)
     Servo_PWM = servo_pwm_min;
   
-  if((Error<2) && (Error>-2))    //Æ«²îÌ«Ğ¡¾Í²»¸Ä±ä¶æ»ú½Ç¶È
-     Servo_PWM=servo_pwm_middle;    //Ê¹ÓÃÔ­À´¶æ»úµÄÖµ 
+  if((Error<2) && (Error>-2))    //åå·®å¤ªå°å°±ä¸æ”¹å˜èˆµæœºè§’åº¦
+     Servo_PWM=servo_pwm_middle;    //ä½¿ç”¨åŸæ¥èˆµæœºçš„å€¼ 
    
   
    
@@ -304,7 +304,7 @@ void main()
 	fclose(fp);
 	
 	int i;
-	 //×ª»»³É²É¼¯½âÑ¹ºóµÄÊı¾İ 
+	 //è½¬æ¢æˆé‡‡é›†è§£å‹åçš„æ•°æ® 
 	for(i=0;i<19200;i++)  
 	{
 		if(data[i]=='1')
