@@ -47,7 +47,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
    {   	
     for(j=Img_Col/2;j>1;j--)  // 从中间向左边搜索，寻找黑点
     {      
-      if(img[N]==1 && img[N-1]==0 )
+      if(img[N]==254 && img[N-1]==0 )
       {     	
         Left_Black[Xi]=j;       // 找到左边黑点
         break;
@@ -58,7 +58,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
     
     for(j=(Img_Col/2);j<160;j++)          // 从中间向右边搜索，寻找黑点
     {      
-      if(img[N]==1 && img[N+1]==0)
+      if(img[N]==254 && img[N+1]==0)
       {
         Right_Black[Xi]=j;         //找到右边黑点
         break; 
@@ -91,7 +91,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 
 	for(j=oldlb+6;j>=oldlb-6;j--)  //从上次的点搜索 
 	{    	  
-	  	if(img[N]==1 && img[N-1]==0 )
+	  	if(img[N]==254 && img[N-1]==0 )
 	   	{     	
 	    	Left_Black[Xi]=j;       
 	        break;
@@ -102,7 +102,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		
 		for(j=Img_Col/2;j>1;j--)  // 从中间向左边搜索，寻找黑点
 	    {      
-	      if(img[N]==1 && img[N-1]==0 )
+	      if(img[N]==254 && img[N-1]==0 )
 	      {     	
 	        Left_Black[Xi]=j;       // 找到左边黑点
 	        break;
@@ -116,7 +116,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	for(j=oldrb-6;j<=oldrb+6;j++)          // 从上次的点搜索 
     {      
 	 		      			 
-	 	 if(img[N]==1 && img[N+1]==0)
+	 	 if(img[N]==254 && img[N+1]==0)
 	      {
 	        Right_Black[Xi]=j;         
 	        break; 
@@ -127,7 +127,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
     	
     	for(j=(Img_Col/2);j<160;j++)          // 从中间向右边搜索，寻找黑点
 	    {      
-	      if(img[N]==1 && img[N+1]==0)
+	      if(img[N]==254 && img[N+1]==0)
 	      {
 	        Right_Black[Xi]=j;         //找到右边黑点
 	        break; 
@@ -250,7 +250,7 @@ int servo_control(void)
    int Servo_PWM;
    int Nozero=0;
    
-   for(i=img_high;i>=1;i--)  //取平均值
+   for(i=img_high;i>=1;i--)  //取有效行的平均值
    {
    	if(Fit_Middleline[i]!=0)
    	{
@@ -282,6 +282,9 @@ int servo_control(void)
   return Servo_PWM;
 
 }
+
+
+
 void main()
 {
 	uint8 data[19201];
@@ -302,7 +305,10 @@ void main()
 	 //转换成采集解压后的数据 
 	for(i=0;i<19200;i++)  
 	{
-		img[i]=data[i]-'0';
+		if(data[i]=='1')
+			img[i]=254;
+		else if(data[i]=='0')
+			img[i]=0;
 		
 	}
 		
@@ -311,7 +317,10 @@ void main()
 	{
 		if(i%160==0)
 			printf("\n%3d:",((i)/160-img_top+1)+1);
-		printf("%d",img[i]);
+		if(img[i]==254)
+			printf("1");
+		else if(img[i]==0)
+			printf("0");
 		
 	}
 	
