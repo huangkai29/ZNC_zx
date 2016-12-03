@@ -10,26 +10,24 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "wd14.txt"
+#define File "wd1.txt"
 
-#define img_high img_base-img_top+1
-#define img_top 41
-#define img_base 100
+#define img_top 41 //图像上部 
+#define img_base 100 //图像下部 
+#define img_high img_base-img_top+1 //图像高度 
 #define Img_Col 160 //图像宽度
-#define servo_freq 50
-#define servo_FTM FTM0
-#define servo_CH FTM_CH0
+
 #define servo_pwm_middle  3400    // 舵机中值
 #define servo_pwm_max  4200      // 舵机偏转最大值
-#define servo_pwm_min  2600 
-#define I i-36 
+#define servo_pwm_min  2600     //舵机偏转最小值
 #define White_Line_Min 20   //最小赛道宽度
 #define White_Line_Max 160   //最大赛道宽度
 #define N (i-1)*160+(j-1) //二维坐标转换为一维数组对应数据  
-
+#define Xi i-img_top+1 //实际行数转换到从0开始的行数 
+ 
 float KP=23;//舵机方向比例系数
 float KD=0.08; //5.0;//舵机方向微分系数
-uint16 Fit_Middleline[161];
+uint16 Fit_Middleline[img_high+1];
 
 //修正数组
 int xz[60]={25,27,29,30,31,33,34,35,36,38,38,40,42,43,44,46,47,49,49,51,52,53,55,56,57,59,60,61,63,64,65,66,68,69,70,72,73,74,76,77,79,79,81,81,84,84,86,87,88,89,89,91,93,93,95,96,97,98,99,101};
@@ -51,32 +49,32 @@ int get_centerline(uint8 img[19200])    //  提取黑线
     {      
       if(img[N]==1 && img[N-1]==0 )
       {     	
-        Left_Black[i-40]=j;       // 找到左边黑点
+        Left_Black[Xi]=j;       // 找到左边黑点
         break;
       }
       else
-      	Left_Black[i-40]=1;	  
+      	Left_Black[Xi]=1;	  
     }
     
     for(j=(Img_Col/2);j<160;j++)          // 从中间向右边搜索，寻找黑点
     {      
       if(img[N]==1 && img[N+1]==0)
       {
-        Right_Black[i-40]=j;         //找到右边黑点
+        Right_Black[Xi]=j;         //找到右边黑点
         break; 
       }	        
 	  else
-	  	Right_Black[i-40]=255;	    
+	  	Right_Black[Xi]=255;	    
     }
     //最近三行有全黑行则舍弃 
-    if(Left_Black[i-40]==1 && Right_Black[i-40]==255 && img[(i-1)*160+(80-1)]!=0)
+    if(Left_Black[Xi]==1 && Right_Black[Xi]==255 && img[(i-1)*160+(80-1)]!=0)
     	return 0;
     else //不舍弃则补线 
     {
-    	if(Left_Black[i-40]==1 && Right_Black[i-40]!=255)
-			Left_Black[i-40]=Right_Black[i-40]-xz[i-40-1];
-		else if(Left_Black[i-40]!=1 && Right_Black[i-40]==255)	
-			Right_Black[i-40]=Left_Black[i-40]+xz[i-40-1];
+    	if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
+			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
+		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	
+			Right_Black[Xi]=Left_Black[Xi]+xz[Xi-1];
 	}
    
  //   if(Fit_Middleline[i]!=0)
@@ -89,13 +87,13 @@ int get_centerline(uint8 img[19200])    //  提取黑线
    {   
    
    	
-   	uint8 oldlb=Left_Black[i-40+1];
+   	uint8 oldlb=Left_Black[Xi+1];
 
 	for(j=oldlb+6;j>=oldlb-6;j--)  //从上次的点搜索 
 	{    	  
 	  	if(img[N]==1 && img[N-1]==0 )
 	   	{     	
-	    	Left_Black[i-40]=j;       
+	    	Left_Black[Xi]=j;       
 	        break;
     	} 	    	    		
 	}
@@ -106,21 +104,21 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	    {      
 	      if(img[N]==1 && img[N-1]==0 )
 	      {     	
-	        Left_Black[i-40]=j;       // 找到左边黑点
+	        Left_Black[Xi]=j;       // 找到左边黑点
 	        break;
 	      }
 	      else
-	      	Left_Black[i-40]=1;	  
+	      	Left_Black[Xi]=1;	  
 	    }
 	}
 	          
-	uint8 oldrb=Right_Black[i-40+1];
+	uint8 oldrb=Right_Black[Xi+1];
 	for(j=oldrb-6;j<=oldrb+6;j++)          // 从上次的点搜索 
     {      
 	 		      			 
 	 	 if(img[N]==1 && img[N+1]==0)
 	      {
-	        Right_Black[i-40]=j;         
+	        Right_Black[Xi]=j;         
 	        break; 
 	      }	        
     }
@@ -131,27 +129,27 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	    {      
 	      if(img[N]==1 && img[N+1]==0)
 	      {
-	        Right_Black[i-40]=j;         //找到右边黑点
+	        Right_Black[Xi]=j;         //找到右边黑点
 	        break; 
 	      }	        
 		  else
-		  	Right_Black[i-40]=255;	    
+		  	Right_Black[Xi]=255;	    
 	    }	
 	}
 	
 
     
     //十字路口标记 
-    if(Left_Black[i-40]==1 && Right_Black[i-40]==255 && img[(i-1)*160+(80-1)]!=0)
+    if(Left_Black[Xi]==1 && Right_Black[Xi]==255 && img[(i-1)*160+(80-1)]!=0)
     	tenflag++;
 
 	//非十字路口补线 
 	else
 	{
-		if(Left_Black[i-40]==1 && Right_Black[i-40]!=255)
-			Left_Black[i-40]=Right_Black[i-40]-xz[i-40-1];
-		else if(Left_Black[i-40]!=1 && Right_Black[i-40]==255)	
-			Right_Black[i-40]=Left_Black[i-40]+xz[i-40-1];
+		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
+			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
+		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	
+			Right_Black[Xi]=Left_Black[Xi]+xz[Xi-1];
 	}
     		
  }
@@ -205,7 +203,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		}
 		
 	if(Fit_Middleline[n]!=0) 
-		img[(n+40-1)*160+(Fit_Middleline[n]-1)]=0;			
+		img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;			
 	}
 	
 	for(n=img_high;n>=1;n--) 
