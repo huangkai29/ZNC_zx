@@ -10,7 +10,7 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "wd1.txt"
+#define File "wd14.txt"
 
 #define img_high img_base-img_top+1
 #define img_top 41
@@ -32,7 +32,7 @@ float KD=0.08; //5.0;//舵机方向微分系数
 uint16 Fit_Middleline[161];
 
 //修正数组
-int xz[85]={10,11,11,12,12,12,13,14,15,15,16,17,17,18,19,19,20,21,21,22,23,23,24,24,25,26,26,27,28,28,29,30,30,31,32,32,33,34,34,35,36,36,37,38,38,39,39,40,40,42,42,43,43,44,44,44,45,46,46,47,48,48,49,49,50,50,51,51,52,53,53,53,54,54,55,55,56,56,56,57,58,58,59,59,59};
+int xz[60]={25,27,29,30,31,33,34,35,36,38,38,40,42,43,44,46,47,49,49,51,52,53,55,56,57,59,60,61,63,64,65,66,68,69,70,72,73,74,76,77,79,79,81,81,84,84,86,87,88,89,89,91,93,93,95,96,97,98,99,101};
 
 uint8 tenflag=0;
 int get_centerline(uint8 img[19200])    //  提取黑线
@@ -41,70 +41,131 @@ int get_centerline(uint8 img[19200])    //  提取黑线
    uint8 Left_Black[img_high+1];
    uint8 Right_Black[img_high+1];
    uint8 Middleline=80;  
-   uint8 First_lost=1;
-   uint8 i,j;
-   uint8 C=0; //偏移系数
-   
-   for(i=img_base;i>=img_top;i--)  //整幅图像的每一行都进行扫描（效率低）
-   {
-   	
-    for(j=Middleline-C;j>1;j--)  // 从中间向左边搜索，寻找黑点
-    {
-      
-      
+   int16 i,j;
+
+   ////////////////////////////////////////搜索前三行,判断是否是有效图像/////////////////////////////
+    
+   for(i=img_base;i>=img_base-2;i--)  //从中线开始搜索前三行 
+   {   	
+    for(j=Img_Col/2;j>1;j--)  // 从中间向左边搜索，寻找黑点
+    {      
       if(img[N]==1 && img[N-1]==0 )
-      {
-      	
-
+      {     	
         Left_Black[i-40]=j;       // 找到左边黑点
-
         break;
       }
       else
-      {
-      	Left_Black[i-40]=1;
-	  }
+      	Left_Black[i-40]=1;	  
     }
     
-    for(j=(Middleline+1+C);j<160;j++)          // 从中间向右边搜索，寻找黑点
-    {
-      
-
+    for(j=(Img_Col/2);j<160;j++)          // 从中间向右边搜索，寻找黑点
+    {      
       if(img[N]==1 && img[N+1]==0)
       {
-
         Right_Black[i-40]=j;         //找到右边黑点
         break; 
       }	        
 	  else
-	  {
-	  	Right_Black[i-40]=255;
-	  }  
+	  	Right_Black[i-40]=255;	    
     }
-    
-    if(Left_Black[i-40]==1 && Right_Black[i-40]==255)
-    	tenflag++;
-    
-    //最近三行不全为黑色舍弃该场 
-    if((Right_Black[i-40]==0 && Left_Black[i-40]==0) && (i==img_base || i==img_base-1 || i==img_base-2))
-    {
+    //最近三行有全黑行则舍弃 
+    if(Left_Black[i-40]==1 && Right_Black[i-40]==255 && img[(i-1)*160+(80-1)]!=0)
     	return 0;
+    else //不舍弃则补线 
+    {
+    	if(Left_Black[i-40]==1 && Right_Black[i-40]!=255)
+			Left_Black[i-40]=Right_Black[i-40]-xz[i-40-1];
+		else if(Left_Black[i-40]!=1 && Right_Black[i-40]==255)	
+			Right_Black[i-40]=Left_Black[i-40]+xz[i-40-1];
 	}
-
    
  //   if(Fit_Middleline[i]!=0)
-//    	img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //画黑线 
-    
- //   C=(Right_Black-Left_Black)/2-5;
-	
+//    	img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //画黑线    
+
  }
+ 
+  /////////////////////////////图像有效,继续搜索 ////////////////////////////////////////
+   for(i=img_base-3;i>=img_top;i--)  //边沿寻点 
+   {   
+   
+   	
+   	uint8 oldlb=Left_Black[i-40+1];
+
+	for(j=oldlb+6;j>=oldlb-6;j--)  //从上次的点搜索 
+	{    	  
+	  	if(img[N]==1 && img[N-1]==0 )
+	   	{     	
+	    	Left_Black[i-40]=j;       
+	        break;
+    	} 	    	    		
+	}
+	if(j==oldlb-7) //边沿寻点不成，改为朴素的选点 
+	{
+		
+		for(j=Img_Col/2;j>1;j--)  // 从中间向左边搜索，寻找黑点
+	    {      
+	      if(img[N]==1 && img[N-1]==0 )
+	      {     	
+	        Left_Black[i-40]=j;       // 找到左边黑点
+	        break;
+	      }
+	      else
+	      	Left_Black[i-40]=1;	  
+	    }
+	}
+	          
+	uint8 oldrb=Right_Black[i-40+1];
+	for(j=oldrb-6;j<=oldrb+6;j++)          // 从上次的点搜索 
+    {      
+	 		      			 
+	 	 if(img[N]==1 && img[N+1]==0)
+	      {
+	        Right_Black[i-40]=j;         
+	        break; 
+	      }	        
+    }
+    if(j==oldrb+7) //边沿寻点不成，改为朴素的选点 
+    {
+    	
+    	for(j=(Img_Col/2);j<160;j++)          // 从中间向右边搜索，寻找黑点
+	    {      
+	      if(img[N]==1 && img[N+1]==0)
+	      {
+	        Right_Black[i-40]=j;         //找到右边黑点
+	        break; 
+	      }	        
+		  else
+		  	Right_Black[i-40]=255;	    
+	    }	
+	}
+	
+
+    
+    //十字路口标记 
+    if(Left_Black[i-40]==1 && Right_Black[i-40]==255 && img[(i-1)*160+(80-1)]!=0)
+    	tenflag++;
+
+	//非十字路口补线 
+	else
+	{
+		if(Left_Black[i-40]==1 && Right_Black[i-40]!=255)
+			Left_Black[i-40]=Right_Black[i-40]-xz[i-40-1];
+		else if(Left_Black[i-40]!=1 && Right_Black[i-40]==255)	
+			Right_Black[i-40]=Left_Black[i-40]+xz[i-40-1];
+	}
+    		
+ }
+ //////////////////////////////////////////赛道左右边线数组处理以及画中线 ///////////////////////////////////////
 	uint8 n;
 	uint8 zzFlag=0;
+	uint8 discon=0;
+	
 	for(n=img_high-1;n>=1;n--) 
 	{
 		
 	 	if(tenflag>=3) //十字路口 
 	 	{
+	 		
 	 		
 	 		if(!(Left_Black[n]-Left_Black[n+1]>=0 && Left_Black[n]-Left_Black[n+1]<=2))
 	 			zzFlag=1;
@@ -119,22 +180,39 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 			{
 				Fit_Middleline[n]=Fit_Middleline[n+1];
 			}
+			else
+				Fit_Middleline[n]=0;
 			
 			
-			printf("%d:%d\n",n,Fit_Middleline[n]);
-			img[(n+40-1)*160+(Fit_Middleline[n]-1)]=0;
+			
 					
 		}
-	//	else //弯道
 		
+		else //弯道（已经补线）和直道 
+		{
+			//赛道连续差值6以内，一旦不连续则终止中线拟合 
+			if((Left_Black[n]-Left_Black[n+1]>=-6 && Left_Black[n]-Left_Black[n+1]<=6) && Right_Black[n]-Right_Black[n+1]<=6 && Right_Black[n]-Right_Black[n+1]>=-6 && discon==0)
+	 		{
+	 			Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
+	 			
+			}
+			else
+			{
+				Fit_Middleline[n]=0;
+				discon=1;
+			}
 				
+		}
+		
+	if(Fit_Middleline[n]!=0) 
+		img[(n+40-1)*160+(Fit_Middleline[n]-1)]=0;			
 	}
 	
+	for(n=img_high;n>=1;n--) 
+	{
+		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
+	}
 	
-	
-	 	
-	 
-	 
 	  return 8;
 }
  
