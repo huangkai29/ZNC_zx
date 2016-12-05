@@ -10,8 +10,8 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "dd.txt"
-#include "common.h"
+#define File "wd3.txt"
+
 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
@@ -23,7 +23,7 @@ typedef long  long          int64;  /* 64 bits */
 #define servo_pwm_min  2600     //舵机偏转最小值
 #define White_Line_Min 20   //最小赛道宽度
 #define White_Line_Max 160   //最大赛道宽度
-#define N (i-1)*160+(j-1) //二维坐标转换为一维数组对应数据  
+#define N (i-1)*Img_Col+(j-1) //二维坐标转换为一维数组对应数据  
 #define Xi i-img_top+1 //实际行数转换到从0开始的行数 
  
 float KP=30;//舵机方向比例系数
@@ -37,8 +37,8 @@ int xz[60]={25,27,29,30,31,33,34,35,36,38,38,40,42,43,44,46,47,49,49,51,52,53,55
 int get_centerline(uint8 img[19200])    //  提取黑线
 {
    uint8 tenflag=0;
-   uint8 Left_Black[img_high+1];
-   uint8 Right_Black[img_high+1];
+   int16 Left_Black[img_high+1];
+   int16 Right_Black[img_high+1];
    uint8 Middleline=80;  
    int16 i,j;
 
@@ -68,7 +68,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	  	Right_Black[Xi]=255;	    
     }
     //最近三行有全黑行则舍弃 
-    if(Left_Black[Xi]==1 && Right_Black[Xi]==255 && img[(i-1)*160+(80-1)]!=0)
+    if((Left_Black[Xi]==1 && Right_Black[Xi]==255) || img[(img_base-1)*160+(80-1)]==0 )
     	return 0;
     else //不舍弃则补线 
     {
@@ -78,8 +78,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 			Right_Black[Xi]=Left_Black[Xi]+xz[Xi-1];
 	}
    
- //   if(Fit_Middleline[i]!=0)
-//    	img[(i-1)*160+(Fit_Middleline[i]-1)]=0; //画黑线    
+ 
 
  }
  
@@ -141,8 +140,12 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 
     
     //十字路口标记 
-    if(Left_Black[Xi]==1 && Right_Black[Xi]==255 && img[(i-1)*160+(80-1)]!=0)
-    	tenflag++;
+    uint8 Firmid=(Right_Black[img_base]-Left_Black[img_base])/2;
+    if(Left_Black[Xi]==1 && Right_Black[Xi]==255  && i>=img_top+20)
+    	if(img[(i-1)*160+(Firmid-1)]==0) //不是通路 
+    		;
+    	else
+    		tenflag++;
 
 	//非十字路口补线 （弯道补线） 
 	else  
@@ -165,7 +168,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	for(n=img_high-1;n>=1;n--) 
 	{
 		/////////////十字路口 /////////////////
-	 	if(tenflag>=4) 
+	 	if(tenflag>=3) 
 	 	{
 	 		
 	 		
@@ -228,14 +231,14 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 //				
 		}
 		
-	//if(Fit_Middleline[n]!=0)  //画中线 
-	//	img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
+	if(Fit_Middleline[n]!=0)  //画中线 
+		img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
 				
 	}
 	
-//	for(n=img_high;n>=1;n--) 
-//		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
-//	
+	for(n=img_high;n>=1;n--) 
+		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
+	
 	
 	  return 8;
 }
@@ -327,7 +330,7 @@ void main()
 		
 	}
 	
-	printf("\n%d",servo_control());
+//	printf("\n%d",servo_control());
 	
 	
 
