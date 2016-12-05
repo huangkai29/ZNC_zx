@@ -11,6 +11,7 @@ typedef long  long          int64;  /* 64 bits */
 #include <stdio.h>
 #include <string.h>
 #define File "dd.txt"
+#include "common.h"
 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
@@ -25,17 +26,17 @@ typedef long  long          int64;  /* 64 bits */
 #define N (i-1)*160+(j-1) //二维坐标转换为一维数组对应数据  
 #define Xi i-img_top+1 //实际行数转换到从0开始的行数 
  
-float KP=23;//舵机方向比例系数
+float KP=30;//舵机方向比例系数
 float KD=0.08; //5.0;//舵机方向微分系数
 uint16 Fit_Middleline[img_high+1];
 
 //修正数组
 int xz[60]={25,27,29,30,31,33,34,35,36,38,38,40,42,43,44,46,47,49,49,51,52,53,55,56,57,59,60,61,63,64,65,66,68,69,70,72,73,74,76,77,79,79,81,81,84,84,86,87,88,89,89,91,93,93,95,96,97,98,99,101};
 
-uint8 tenflag=0;
+
 int get_centerline(uint8 img[19200])    //  提取黑线
 {
-
+   uint8 tenflag=0;
    uint8 Left_Black[img_high+1];
    uint8 Right_Black[img_high+1];
    uint8 Middleline=80;  
@@ -144,7 +145,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
     	tenflag++;
 
 	//非十字路口补线 （弯道补线） 
-	else if(tenflag<=3) 
+	else  
 	{
 		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
 			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
@@ -164,7 +165,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	for(n=img_high-1;n>=1;n--) 
 	{
 		/////////////十字路口 /////////////////
-	 	if(tenflag>=3) 
+	 	if(tenflag>=4) 
 	 	{
 	 		
 	 		
@@ -184,13 +185,13 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 				Fit_Middleline[n]=Fit_Middleline[n+1];
 				
 			
-			if(LeftZJ && RightZJ) //出十字路口 
-				if((Left_Black[n]>LeftZJ) && (Right_Black[n]<RightZJ) )
-				{
-					Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
-					printf("sdsadsa\n\n\n");
-				}
-						
+//			if(LeftZJ && RightZJ) //出十字路口 
+//				if((Left_Black[n]>LeftZJ) && (Right_Black[n]<RightZJ) )
+//				{
+//					Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
+//					
+//				}
+//						
 				
 					
 			
@@ -204,12 +205,12 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		{
 			
 			int Midd=(Right_Black[n]+Left_Black[n])/2; //当前行的拟合中线 
-			if(Midd-Fit_Middleline[n+1]<=3 && Midd-Fit_Middleline[n+1]>=-3)
+			if(Midd-Fit_Middleline[n+1]<=10 && Midd-Fit_Middleline[n+1]>=-10)
 				Fit_Middleline[n]=Midd;	
-			else if(Midd-Fit_Middleline[n+2]<=3 && Midd-Fit_Middleline[n+2]>=-3)		//与底下一行不连续，则搜索底下的底下一行	
-				Fit_Middleline[n]=Midd;							
-			else if(Midd-Fit_Middleline[n+3]<=4 && Midd-Fit_Middleline[n+3]>=-4)			
-				Fit_Middleline[n]=Midd;							
+//			else if(Midd-Fit_Middleline[n+4]<=3 && Midd-Fit_Middleline[n+2]>=-3)		//与底下一行不连续，则搜索底下的底下一行	
+//				Fit_Middleline[n]=Midd;							
+//			else if(Midd-Fit_Middleline[n+5]<=4 && Midd-Fit_Middleline[n+3]>=-4)			
+//				Fit_Middleline[n]=Midd;							
 			else			
 				Fit_Middleline[n]=0;				
 			
@@ -227,14 +228,14 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 //				
 		}
 		
-	if(Fit_Middleline[n]!=0)  //画中线 
-		img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
+	//if(Fit_Middleline[n]!=0)  //画中线 
+	//	img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
 				
 	}
 	
-	for(n=img_high;n>=1;n--) 
-		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
-	
+//	for(n=img_high;n>=1;n--) 
+//		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
+//	
 	
 	  return 8;
 }
