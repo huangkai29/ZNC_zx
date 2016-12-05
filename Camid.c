@@ -10,7 +10,7 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "wd3.txt"
+#define File "wd8.txt"
 
 
 #define img_top 41 //图像上部 
@@ -207,8 +207,8 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		else 
 		{
 			
-			int Midd=(Right_Black[n]+Left_Black[n])/2; //当前行的拟合中线 
-			if(Midd-Fit_Middleline[n+1]<=10 && Midd-Fit_Middleline[n+1]>=-10)
+			int Midd=(Right_Black[n]+Left_Black[n])/2; //当前行的拟合中线  差值在宽度以内 
+			if(Midd-Fit_Middleline[n+1]<=10 && Midd-Fit_Middleline[n+1]>=-10 && Midd<=Img_Col && Midd>=0 )
 				Fit_Middleline[n]=Midd;	
 //			else if(Midd-Fit_Middleline[n+4]<=3 && Midd-Fit_Middleline[n+2]>=-3)		//与底下一行不连续，则搜索底下的底下一行	
 //				Fit_Middleline[n]=Midd;							
