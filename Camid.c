@@ -10,7 +10,9 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "wd8.txt"
+#define File "s4.txt"
+
+
 
 
 #define img_top 41 //图像上部 
@@ -31,14 +33,14 @@ float KD=0.08; //5.0;//舵机方向微分系数
 uint16 Fit_Middleline[img_high+1];
 
 //修正数组
-int xz[60]={25,27,29,30,31,33,34,35,36,38,38,40,42,43,44,46,47,49,49,51,52,53,55,56,57,59,60,61,63,64,65,66,68,69,70,72,73,74,76,77,79,79,81,81,84,84,86,87,88,89,89,91,93,93,95,96,97,98,99,101};
+int xz[60]={27,29,30,30,32,32,34,36,37,38,40,41,42,43,44,46,48,49,50,52,53,54,56,56,58,60,61,63,63,65,66,67,69,71,71,73,75,76,77,78,80,81,82,83,84,85,87,87,89,91,91,93,93,95,95,97,98,99,100,101};
 
-
+   int16 Left_Black[img_high+1];
+   int16 Right_Black[img_high+1];
 int get_centerline(uint8 img[19200])    //  提取黑线
 {
    uint8 tenflag=0;
-   int16 Left_Black[img_high+1];
-   int16 Right_Black[img_high+1];
+   uint8 tenflag2=0;
    uint8 Middleline=80;  
    int16 i,j;
 
@@ -68,8 +70,12 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	  	Right_Black[Xi]=255;	    
     }
     //最近三行有全黑行则舍弃 
-    if((Left_Black[Xi]==1 && Right_Black[Xi]==255) || img[(img_base-1)*160+(80-1)]==0 )
-    	return 0;
+    if(img[(i-1)*160+(80-1)]==0)
+        return 1;
+    if((Left_Black[Xi]==1 && Right_Black[Xi]==255) )
+      return 0;
+    
+    	
     else //不舍弃则补线 
     {
     	if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
@@ -81,7 +87,6 @@ int get_centerline(uint8 img[19200])    //  提取黑线
  
 
  }
- 
   /////////////////////////////图像有效,继续搜索 ////////////////////////////////////////
    for(i=img_base-3;i>=img_top;i--)  //边沿寻点 
    {   
@@ -168,7 +173,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	for(n=img_high-1;n>=1;n--) 
 	{
 		/////////////十字路口 /////////////////
-	 	if(tenflag>=3) 
+	 	if(tenflag>=10) 
 	 	{
 	 		
 	 		
@@ -188,13 +193,14 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 				Fit_Middleline[n]=Fit_Middleline[n+1];
 				
 			
-//			if(LeftZJ && RightZJ) //出十字路口 
-//				if((Left_Black[n]>LeftZJ) && (Right_Black[n]<RightZJ) )
-//				{
-//					Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
-//					
-//				}
-//						
+			if(LeftZJ && RightZJ) //出十字路口 
+				if((Left_Black[n]>LeftZJ) && (Right_Black[n]<RightZJ) )
+				{
+					int Midd=(Right_Black[n]+Left_Black[n])/2; //当前行的拟合中线  差值在宽度以内 
+					if(Midd-Fit_Middleline[n+1]<=10 && Midd-Fit_Middleline[n+1]>=-10 && Midd<=Img_Col && Midd>=0 )
+						Fit_Middleline[n]=Midd;		
+				}
+						
 				
 					
 			
@@ -237,7 +243,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	}
 	
 	for(n=img_high;n>=1;n--) 
-		printf("%d:%d %d\n",n,Left_Black[n],Right_Black[n]);
+		printf("%d:%d,%d\n",n,Right_Black[n],Left_Black[n]);
 	
 	
 	  return 8;
@@ -288,7 +294,6 @@ int servo_control(void)
   return Servo_PWM;
 
 }
-
 
 
 void main()
