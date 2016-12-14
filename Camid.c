@@ -10,11 +10,11 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "wd5.txt"
+#define File "5.txt"
 
 
 
-
+#define P 20 //修正数组偏差值 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
 #define img_high img_base-img_top+1 //图像高度 
@@ -28,6 +28,7 @@ typedef long  long          int64;  /* 64 bits */
 #define N (i-1)*Img_Col+(j-1) //二维坐标转换为一维数组对应数据  
 #define Xi i-img_top+1 //实际行数转换到从0开始的行数 
 
+
  
 uint8 plotmid=1; //是否画中线  
 
@@ -35,8 +36,9 @@ float KP=30;//舵机方向比例系数
 float KD=0.08; //5.0;//舵机方向微分系数
 uint16 Fit_Middleline[img_high+1];
 
-//修正数组 (+22)
-int xz[60]={49,51,52,52,54,54,56,58,59,60,62,63,64,65,66,68,70,71,72,74,75,76,78,78,80,82,83,85,85,87,88,89,91,93,93,95,97,98,99,100,102,103,104,105,106,107,109,109,111,113,113,115,115,117,117,119,120,121,122,123};
+//修正数组 
+int xz[60]={27+P,29+P,30+P,30+P,32+P,32+P,34+P,36+P,37+P,38+P,40+P,41+P,42+P,43+P,44+P,46+P,48+P,49+P,50+P,52+P,53+P,54+P,56+P,56+P,58+P,60+P,61+P,63+P,63+P,65+P,66+P,67+P,69+P,71+P,71+P,73+P,75+P,76+P,77+P,78+P,
+91+P,93+P,93+P,95+P,95+P,97+P,98+P,99+P,100+P,101+P};
 
    int16 Left_Black[img_high+1];
    int16 Right_Black[img_high+1];
@@ -319,7 +321,7 @@ int servo_control(void)
   if(Servo_PWM < servo_pwm_min)
     Servo_PWM = servo_pwm_min;
   
-  if((Error<2) && (Error>-2))    //偏差太小就不改变舵机角度
+  if(Error==0)    //偏差太小就不改变舵机角度
      Servo_PWM=servo_pwm_middle;    //使用原来舵机的值 
    
   
