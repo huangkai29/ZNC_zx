@@ -10,11 +10,11 @@ typedef long  long          int64;  /* 64 bits */
 
 #include <stdio.h>
 #include <string.h>
-#define File "dd1.txt"
+#define File "wd2.txt"
 
 
 
-#define P 20 //修正数组偏差值 
+
 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
@@ -30,18 +30,25 @@ typedef long  long          int64;  /* 64 bits */
 
 #define plotmid 1 //是否画中线  
 
+uint8 jdz(int16 n)
+{
+	if(n<0) return -n;
+	else return n;
+}
+
 float KP=24;//舵机方向比例系数
 float KD=0.08; //5.0;//舵机方向微分系数
 uint16 Fit_Middleline[img_high+1];
 
 //修正数组 
-const int xz[60]={27+P,29+P,30+P,30+P,32+P,32+P,34+P,36+P,37+P,38+P,40+P,41+P,42+P,43+P,44+P,46+P,48+P,49+P,50+P,52+P,53+P,54+P,56+P,56+P,58+P,60+P,61+P,63+P,63+P,65+P,66+P,67+P,69+P,71+P,71+P,73+P,75+P,76+P,77+P,78+P,
-91+P,93+P,93+P,95+P,95+P,97+P,98+P,99+P,100+P,101+P};
+const int xz[60]={27,29,30,30,32,32,34,36,37,38,40,41,42,43,44,46,48,49,50,52,53,54,56,56,58,60,61,63,63,65,66,67,69,71,71,73,75,76,77,78,80,81,82,83,84,85,87,87,89,91,91,93,93,95,95,97,98,99,100,101};
 
 int16 Left_Black[img_high+1];
 int16 Right_Black[img_high+1];
 int get_centerline(uint8 img[19200])    //  提取黑线
 {
+   uint8 P=0; //修正数组偏差值 
+   uint8 Pflag=0;
    uint8 tenflag=0;
    uint8 Middleline=80;  
    int16 i,j;
@@ -157,10 +164,29 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	//非十字路口补线 （弯道补线） 
 	else  
 	{
-		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
-			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
-		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	 
-			Right_Black[Xi]=Left_Black[Xi]+xz[Xi-1];
+		
+		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255 )
+		{
+			if( Pflag==0)
+			{
+				P=jdz(Left_Black[Xi+1]-jdz(Right_Black[Xi+1]-xz[Xi-1+1])); //上一行的偏差延续到下一行的偏差数组，加上前两行的偏差度+1 
+				Pflag=1;
+			}
+			
+			Left_Black[Xi]=Right_Black[Xi]-(xz[Xi-1]+P);
+		}
+			
+		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	
+		{
+			if( Pflag==0)
+			{
+				P=jdz(Right_Black[Xi+1]-jdz(Left_Black[Xi+1]+xz[Xi-1+1]));
+				Pflag=1;
+			}
+			
+			Right_Black[Xi]=Left_Black[Xi]+(xz[Xi-1]+P);
+		} 
+			
 	}
     		
  }
