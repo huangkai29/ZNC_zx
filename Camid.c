@@ -169,7 +169,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		{
 			if( Pflag==0)
 			{
-				P=jdz(Left_Black[Xi+1]-jdz(Right_Black[Xi+1]-xz[Xi-1+1]))+jdz(Left_Black[Xi+1]-Left_Black[Xi+2])+1; //上一行的偏差延续到下一行的偏差数组，加上前两行的偏差度+1 
+				P=jdz(Left_Black[Xi+1]-jdz(Right_Black[Xi+1]-xz[Xi-1+1])); //上一行的偏差延续到下一行的偏差数组，加上前两行的偏差度+1 
 				Pflag=1;
 			}
 			
@@ -180,7 +180,7 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 		{
 			if( Pflag==0)
 			{
-				P=jdz(Right_Black[Xi+1]-jdz(Left_Black[Xi+1]+xz[Xi-1+1]))+jdz(Right_Black[Xi+1]-Right_Black[Xi+2])+1;
+				P=jdz(Right_Black[Xi+1]-jdz(Left_Black[Xi+1]+xz[Xi-1+1]));
 				Pflag=1;
 			}
 			
