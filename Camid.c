@@ -13,7 +13,7 @@ typedef long  long          int64;  /* 64 bits */
 #define File "5.txt"
 
 
-
+#define plotmid 1 //是否画中线
 #define P 20 //修正数组偏差值 
 #define img_top 41 //图像上部 
 #define img_base 100 //图像下部 
@@ -30,7 +30,7 @@ typedef long  long          int64;  /* 64 bits */
 
 
  
-uint8 plotmid=1; //是否画中线  
+  
 
 float KP=30;//舵机方向比例系数
 float KD=0.08; //5.0;//舵机方向微分系数
@@ -39,12 +39,13 @@ uint16 Fit_Middleline[img_high+1];
 //修正数组 
 int xz[60]={27+P,29+P,30+P,30+P,32+P,32+P,34+P,36+P,37+P,38+P,40+P,41+P,42+P,43+P,44+P,46+P,48+P,49+P,50+P,52+P,53+P,54+P,56+P,56+P,58+P,60+P,61+P,63+P,63+P,65+P,66+P,67+P,69+P,71+P,71+P,73+P,75+P,76+P,77+P,78+P,80+P,81+P,82+P,83+P,84+P,85+P,87+P,87+P,89+P,91+P,91+P,93+P,93+P,95+P,95+P,97+P,98+P,99+P,100+P,101+P};
 
-   int16 Left_Black[img_high+1];
-   int16 Right_Black[img_high+1];
+int16 Left_Black[img_high+1];
+int16 Right_Black[img_high+1];
 int get_centerline(uint8 img[19200])    //  提取黑线
 {
    uint8 tenflag=0;
-   uint8 tenflag2=0;
+   uint8 Rlost=0;
+   uint8 Llost=0;
    uint8 Middleline=80;  
    int16 i,j;
 
@@ -60,8 +61,10 @@ int get_centerline(uint8 img[19200])    //  提取黑线
         break;
       }
       else
-      	Left_Black[Xi]=1;	  
+      	Left_Black[Xi]=1;         		  
     }
+    if(Left_Black[Xi]==1) //左丢线 
+      	Llost++;
     
     for(j=(Img_Col/2);j<160;j++)          // 从中间向右边搜索，寻找黑点
     {      
@@ -71,14 +74,17 @@ int get_centerline(uint8 img[19200])    //  提取黑线
         break; 
       }	        
 	  else
-	  	Right_Black[Xi]=255;	    
+	  
+	  	Right_Black[Xi]=255;	  		    
     }
+    if(Right_Black[Xi]==255)
+    	Rlost++;
     //最近三行有全黑行则舍弃 
     if(img[(i-1)*160+(80-1)]==0)
         return 1;
     if((Left_Black[Xi]==1 && Right_Black[Xi]==255) )
     	return 0;
-//      tenflag2++;
+
     
     	
     else //不舍弃则补线 
@@ -98,14 +104,15 @@ int get_centerline(uint8 img[19200])    //  提取黑线
    
    	
    	uint8 oldlb=Left_Black[Xi+1];
-
+	if(oldlb-6<=1) oldlb=8; //防止越界 
 	for(j=oldlb+6;j>=oldlb-6;j--)  //从上次的点搜索 
 	{    	  
 	  	if(img[N]==254 && img[N-1]==0 )
 	   	{     	
 	    	Left_Black[Xi]=j;       
 	        break;
-    	} 	    	    		
+    	} 
+			    	    		
 	}
 	if(j==oldlb-7) //边沿寻点不成，改为朴素的选点 
 	{
@@ -118,11 +125,14 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	        break;
 	      }
 	      else
-	      	Left_Black[Xi]=1;	  
+	      	Left_Black[Xi]=1;	      		  
 	    }
+	    if(Left_Black[Xi]==1) //左丢线 
+      		Llost++;
 	}
 	          
 	uint8 oldrb=Right_Black[Xi+1];
+	if(oldrb+6>=160) oldrb=153; //防止越界 
 	for(j=oldrb-6;j<=oldrb+6;j++)          // 从上次的点搜索 
     {      
 	 		      			 
@@ -130,7 +140,8 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	      {
 	        Right_Black[Xi]=j;         
 	        break; 
-	      }	        
+	      }	 
+		      
     }
     if(j==oldrb+7) //边沿寻点不成，改为朴素的选点 
     {
@@ -143,12 +154,19 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 	        break; 
 	      }	        
 		  else
-		  	Right_Black[Xi]=255;	    
+		  	Right_Black[Xi]=255;		  		    
 	    }	
+	    if(Right_Black[Xi]==255) //左丢线 
+      		Rlost++;
 	}
-	
-
-    
+	//急弯打死 
+	if(i>=img_base-10)
+	{
+		if(Llost==0 && Rlost>=5 ) //右丢线，在入弯打死 
+			return -3;
+		if(Llost>=5 && Rlost==0 ) //左丢线，在入弯打死  
+			return 3;
+	}		    
     //十字路口标记 
     uint8 Firmid=(Right_Black[img_base]-Left_Black[img_base])/2;
     if(Left_Black[Xi]==1 && Right_Black[Xi]==255  && i>=img_top+20)
@@ -156,14 +174,18 @@ int get_centerline(uint8 img[19200])    //  提取黑线
     		;
     	else
     		tenflag++;
-
+	
 	//非十字路口补线 （弯道补线） 
 	else  
 	{
 		if(Left_Black[Xi]==1 && Right_Black[Xi]!=255)
 			Left_Black[Xi]=Right_Black[Xi]-xz[Xi-1];
+
+					
 		else if(Left_Black[Xi]!=1 && Right_Black[Xi]==255)	 
 			Right_Black[Xi]=Left_Black[Xi]+xz[Xi-1];
+		
+			
 	}
     		
  }
@@ -171,39 +193,8 @@ int get_centerline(uint8 img[19200])    //  提取黑线
  
  	/////////////////十字路口丢失赛道///////////// 
  	uint8 n;
-	uint8 discon=0;
 	uint8 LeftZJ=0,RightZJ=0; //出十字的标志 
- 	if(tenflag2>=1)
- 	{
- 		Fit_Middleline[1]=(Right_Black[1]+Left_Black[1])/2; //第一行中线
- 		for(n=2;n<=img_high;n++) 
-		{
-			/////////////十字路口 /////////////////
-				
-		 		if(!(Left_Black[n]-Left_Black[n-1]<=3 && Left_Black[n]-Left_Black[n-1]>=-3) && LeftZJ==0) //检测到直角，标记为出十字 
-		 			LeftZJ=Left_Black[n-1]; 
-									
-		 		if (!(Right_Black[n]-Right_Black[n-1]>=-3 && Right_Black[n]-Right_Black[n-1]<=3) && RightZJ==0)
 	
-		 			RightZJ=Right_Black[n-1];
-	
-				
-		 					
-		 		if(!LeftZJ && !RightZJ) //非十字区 
-					Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
-				
-				else if(LeftZJ || RightZJ)	//进入十字区，用刚出十字的中线拟合 
-					Fit_Middleline[n]=0;
-					
-				if(Fit_Middleline[n]!=0 && plotmid==1)  //画中线 
-					img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
-										
-		}
-		
- 		
-	}
- 	else
- 	{
 		/////////////十字路口 /////////////////
 		
 		Fit_Middleline[img_high]=(Right_Black[img_high]+Left_Black[img_high])/2; //最后一行中线 
@@ -246,38 +237,23 @@ int get_centerline(uint8 img[19200])    //  提取黑线
 				
 				int Midd=(Right_Black[n]+Left_Black[n])/2; //当前行的拟合中线  差值在宽度以内 
 				if(Midd-Fit_Middleline[n+1]<=11 && Midd-Fit_Middleline[n+1]>=-11 && Midd<=Img_Col && Midd>=0 )
-					Fit_Middleline[n]=Midd;	
-	//			else if(Midd-Fit_Middleline[n+4]<=3 && Midd-Fit_Middleline[n+2]>=-3)		//与底下一行不连续，则搜索底下的底下一行	
-	//				Fit_Middleline[n]=Midd;							
-	//			else if(Midd-Fit_Middleline[n+5]<=4 && Midd-Fit_Middleline[n+3]>=-4)			
-	//				Fit_Middleline[n]=Midd;							
+					Fit_Middleline[n]=Midd;							
 				else			
 					Fit_Middleline[n]=0;				
 				
-	//			//赛道连续差值6以内，一旦不连续则终止中线拟合 
-	//			if((Left_Black[n]-Left_Black[n+1]>=-6 && Left_Black[n]-Left_Black[n+1]<=6) && Right_Black[n]-Right_Black[n+1]<=6 && Right_Black[n]-Right_Black[n+1]>=-6 && discon==0)
-	//	 		{
-	//	 			Fit_Middleline[n]=(Right_Black[n]+Left_Black[n])/2;
-	//	 			
-	//			}
-	//			else
-	//			{
-	//				Fit_Middleline[n]=0;
-	//				discon=1;
-	//			}
-	//				
-		}
 		
+		}
+	# if plotmid==1 	
 	if(Fit_Middleline[n]!=0 && plotmid==1)  //画中线 
 		img[((n+img_top-1)-1)*160+(Fit_Middleline[n]-1)]=0;	
-				
-	}
+	#endif			
+		}
  		
-	 }
+	 
 
 	
 //	for(n=img_high;n>=1;n--) 
-//		printf("%d:%d,%d\n",n,Right_Black[n],Left_Black[n]);
+//		printf("%d:%d,%d\n",n,Left_Black[n],Right_Black[n]);
 	
 	
 	  return 8;
@@ -356,8 +332,8 @@ void main()
 			img[i]=0;
 		
 	}
-		
-	get_centerline(img);
+	int asas=get_centerline(img);	
+	
 	for(i=(img_top-1)*160;i<img_base*160;i++)
 	{
 		if(i%160==0)
@@ -368,8 +344,10 @@ void main()
 			printf("0");
 		
 	}
-	
-	printf("\n%d",servo_control());
+	if(asas==3)printf("\n4200");
+	else if(asas==-3)printf("\n2600");
+	else
+		printf("\n%d",servo_control());
 	
 	
 
